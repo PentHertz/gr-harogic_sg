@@ -12,8 +12,9 @@ parameters:
   label: Mode
   dtype: int
   default: '0'
-  options: ['0', '1', '2', '3']
-  option_labels: [GNU Radio IQ, CW, Frequency Sweep, Level Sweep]
+  options: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13']
+  option_labels: [GNU Radio IQ, CW, Frequency Sweep, Level Sweep, AM, FM, PM, Pulse, Multitone,
+    Ramp Sweep, AWGN, Digital Modulation, DSSS, OFDM]
 - id: frequency
   label: Frequency (Hz)
   dtype: real
@@ -75,6 +76,200 @@ parameters:
   dtype: real
   default: '0.1'
   hide: ${ 'none' if mode in (2, 3) else 'all' }
+- id: mod_rate
+  label: Mod. Rate (Hz)
+  dtype: real
+  default: '1e3'
+  hide: ${ 'none' if mode in (4, 5, 6) else 'all' }
+- id: mod_shape
+  label: Mod. Waveform
+  dtype: int
+  default: '1'
+  options: ['1', '2', '3', '4']
+  option_labels: ['Sine', 'Square', 'Triangle', 'Ramp']
+  hide: ${ 'none' if mode in (4, 5, 6) else 'all' }
+- id: am_depth
+  label: AM Depth (%)
+  dtype: real
+  default: '50'
+  hide: ${ 'none' if mode == 4 else 'all' }
+- id: fm_deviation
+  label: FM Deviation (Hz)
+  dtype: real
+  default: '10e3'
+  hide: ${ 'none' if mode == 5 else 'all' }
+- id: pm_deviation
+  label: PM Deviation (rad)
+  dtype: real
+  default: '1.0'
+  hide: ${ 'none' if mode == 6 else 'all' }
+- id: pulse_width
+  label: Pulse Width (s)
+  dtype: real
+  default: '10e-6'
+  hide: ${ 'none' if mode == 7 else 'all' }
+- id: pulse_period
+  label: Pulse Period (s)
+  dtype: real
+  default: '100e-6'
+  hide: ${ 'none' if mode == 7 else 'all' }
+- id: tone_count
+  label: Tones
+  dtype: int
+  default: '8'
+  hide: ${ 'none' if mode == 8 else 'all' }
+- id: tone_spacing
+  label: Tone Spacing (Hz)
+  dtype: real
+  default: '100e3'
+  hide: ${ 'none' if mode == 8 else 'all' }
+- id: tone_phase
+  label: Tone Phases
+  dtype: int
+  default: '2'
+  options: ['0', '1', '2']
+  option_labels: ['Fixed', 'Random', 'Parabolic (low crest factor)']
+  hide: ${ 'none' if mode == 8 else 'all' }
+- id: ramp_span
+  label: Ramp Span (Hz)
+  dtype: real
+  default: '1e6'
+  hide: ${ 'none' if mode == 9 else 'all' }
+- id: ramp_time
+  label: Ramp Sweep Time (s)
+  dtype: real
+  default: '1e-3'
+  hide: ${ 'none' if mode == 9 else 'all' }
+- id: ramp_period
+  label: Ramp Period (s)
+  dtype: real
+  default: '1e-3'
+  hide: ${ 'none' if mode == 9 else 'all' }
+- id: noise_bw
+  label: Noise Bandwidth (Hz)
+  dtype: real
+  default: '1e6'
+  hide: ${ 'none' if mode == 10 else 'all' }
+- id: noise_length
+  label: Noise Length (s)
+  dtype: real
+  default: '10e-3'
+  hide: ${ 'none' if mode == 10 else 'all' }
+- id: dig_type
+  label: Modulation
+  dtype: int
+  default: '3'
+  options: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '22', '21', '14', '19', '20', '15', '16', '17', '18']
+  option_labels: ['BPSK', 'DBPSK', 'QPSK', 'DQPSK', 'OQPSK', 'pi/4 DQPSK', '8PSK', 'D8PSK', '16PSK', '16QAM', '64QAM', '256QAM', '1024QAM', '8QAM', '16APSK', '2ASK', '4ASK', '8ASK', '2FSK', '4FSK', '8FSK', '16FSK']
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: symbol_rate
+  label: Symbol Rate (Hz)
+  dtype: real
+  default: '100e3'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: fsk_deviation
+  label: FSK Deviation (Hz)
+  dtype: real
+  default: '25e3'
+  hide: ${ 'none' if (mode == 11 and dig_type in (15, 16, 17, 18)) else 'all' }
+- id: filter_type
+  label: Filter
+  dtype: int
+  default: '3'
+  options: ['1', '2', '3', '4', '5']
+  option_labels: ['Rectangular', 'Raised Cosine', 'Root Raised Cosine', 'Gaussian', 'Half Sine']
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: filter_alpha
+  label: Filter Alpha / BT
+  dtype: real
+  default: '0.35'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: sps
+  label: Samples per Symbol
+  dtype: int
+  default: '4'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: filter_span
+  label: Filter Span (symbols)
+  dtype: int
+  default: '8'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: pn_order
+  label: PN Order
+  dtype: int
+  default: '9'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: pn_seed
+  label: PN Seed
+  dtype: int
+  default: '1'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: symbols
+  label: Symbols (0 = PN period)
+  dtype: int
+  default: '0'
+  hide: ${ 'none' if mode in (11, 12) else 'all' }
+- id: dsss_code
+  label: Spreading Code Order
+  dtype: int
+  default: '5'
+  hide: ${ 'none' if mode == 12 else 'all' }
+- id: ofdm_rate
+  label: OFDM Sample Rate (S/s)
+  dtype: real
+  default: '20e6'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_fft
+  label: FFT Size
+  dtype: int
+  default: '64'
+  options: ['16', '32', '64', '128', '256', '512', '1024', '2048']
+  option_labels: ['16', '32', '64', '128', '256', '512', '1024', '2048']
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_mod
+  label: Subcarrier Modulation
+  dtype: int
+  default: '3'
+  options: ['1', '3', '7', '9', '10', '11', '12']
+  option_labels: ['BPSK', 'QPSK', '8PSK', '16PSK', '16QAM', '64QAM', '256QAM']
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_symbols
+  label: OFDM Symbols
+  dtype: int
+  default: '100'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_guard_left
+  label: Left Guard Carriers
+  dtype: int
+  default: '6'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_guard_right
+  label: Right Guard Carriers
+  dtype: int
+  default: '5'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_cp
+  label: Guard Interval (%)
+  dtype: int
+  default: '25'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_window
+  label: Window Length (%, 0 = off)
+  dtype: int
+  default: '0'
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_null_dc
+  label: Null DC Carrier
+  dtype: bool
+  default: 'True'
+  options: ['True', 'False']
+  option_labels: ['Yes', 'No']
+  hide: ${ 'none' if mode == 13 else 'all' }
+- id: ofdm_idle
+  label: Idle Between Bursts (s)
+  dtype: real
+  default: '0'
+  hide: ${ 'none' if mode == 13 else 'all' }
 - id: freq_offset
   label: Freq. Offset (Hz)
   dtype: real
@@ -139,6 +334,13 @@ asserts:
 - ${ device_index >= 0 }
 - ${ mode != 2 or (sweep_step > 0 and sweep_stop > sweep_start) }
 - ${ mode not in (2, 3) or dwell > 0 }
+- ${ mode not in (4, 5, 6) or mod_rate > 0 }
+- ${ mode != 7 or (pulse_width > 0 and pulse_period > pulse_width) }
+- ${ mode != 8 or (tone_count >= 2 and tone_count <= 1024 and tone_spacing > 0) }
+- ${ mode != 9 or (ramp_span > 0 and ramp_time > 0 and ramp_period >= ramp_time) }
+- ${ mode != 10 or (noise_bw > 0 and noise_length > 0) }
+- ${ mode not in (11, 12) or (symbol_rate > 0 and sps % 2 == 0 and filter_span % 2 == 0) }
+- ${ mode != 13 or (ofdm_rate >= 195312.5 and ofdm_rate <= 125e6 and ofdm_fft > ofdm_guard_left + ofdm_guard_right) }
 
 templates:
   imports: from gnuradio import harogic_sg
@@ -165,7 +367,43 @@ templates:
         ext_ref=${ext_ref},
         ref_freq=${ref_freq},
         ref_out=${ref_out},
-        max_latency_ms=${max_latency_ms})
+        max_latency_ms=${max_latency_ms},
+        mod_rate=${mod_rate},
+        mod_shape=${mod_shape},
+        am_depth=${am_depth},
+        fm_deviation=${fm_deviation},
+        pm_deviation=${pm_deviation},
+        pulse_width=${pulse_width},
+        pulse_period=${pulse_period},
+        tone_count=${tone_count},
+        tone_spacing=${tone_spacing},
+        tone_phase=${tone_phase},
+        ramp_span=${ramp_span},
+        ramp_time=${ramp_time},
+        ramp_period=${ramp_period},
+        noise_bw=${noise_bw},
+        noise_length=${noise_length},
+        dig_type=${dig_type},
+        symbol_rate=${symbol_rate},
+        fsk_deviation=${fsk_deviation},
+        filter_type=${filter_type},
+        filter_alpha=${filter_alpha},
+        sps=${sps},
+        filter_span=${filter_span},
+        pn_order=${pn_order},
+        pn_seed=${pn_seed},
+        symbols=${symbols},
+        dsss_code=${dsss_code},
+        ofdm_fft=${ofdm_fft},
+        ofdm_symbols=${ofdm_symbols},
+        ofdm_guard_left=${ofdm_guard_left},
+        ofdm_guard_right=${ofdm_guard_right},
+        ofdm_cp=${ofdm_cp},
+        ofdm_window=${ofdm_window},
+        ofdm_null_dc=${ofdm_null_dc},
+        ofdm_mod=${ofdm_mod},
+        ofdm_idle=${ofdm_idle},
+        ofdm_rate=${ofdm_rate})
   callbacks:
   - set_mode(${mode})
   - set_frequency(${frequency})
@@ -180,11 +418,19 @@ templates:
   - set_phase_offset(${phase_offset})
   - set_lo_mode(${lo_mode})
   - set_max_latency_ms(${max_latency_ms})
+  - set_analog_mod(${mod_rate}, ${mod_shape}, ${am_depth}, ${fm_deviation}, ${pm_deviation})
+  - set_pulse(${pulse_width}, ${pulse_period})
+  - set_multitone(${tone_count}, ${tone_spacing}, ${tone_phase})
+  - set_ramp_sweep(${ramp_span}, ${ramp_time}, ${ramp_period})
+  - set_noise(${noise_bw}, ${noise_length})
+  - set_digital_mod(${dig_type}, ${symbol_rate}, ${fsk_deviation}, ${filter_type}, ${filter_alpha}, ${sps}, ${filter_span}, ${pn_order}, ${pn_seed}, ${symbols})
+  - set_dsss_code(${dsss_code})
+  - set_ofdm(${ofdm_fft}, ${ofdm_symbols}, ${ofdm_guard_left}, ${ofdm_guard_right}, ${ofdm_cp}, ${ofdm_window}, ${ofdm_null_dc}, ${ofdm_mod}, ${ofdm_idle}, ${ofdm_rate})
 
 cpp_templates:
   includes: ['#include <gnuradio/harogic_sg/sink.h>']
   declarations: 'gr::harogic_sg::sink::sptr ${id};'
-  make: 'this->${id} = gr::harogic_sg::sink::make(${device_index}, ${mode}, ${frequency}, ${level}, ${samp_rate}, ${rf_on}, ${scale}, ${sweep_start}, ${sweep_stop}, ${sweep_step}, ${level_start}, ${level_stop}, ${level_step}, ${dwell}, ${freq_offset}, ${phase_offset}, ${lo_mode}, ${rf_port}, ${ext_ref}, ${ref_freq}, ${ref_out}, ${max_latency_ms});'
+  make: 'this->${id} = gr::harogic_sg::sink::make(${device_index}, ${mode}, ${frequency}, ${level}, ${samp_rate}, ${rf_on}, ${scale}, ${sweep_start}, ${sweep_stop}, ${sweep_step}, ${level_start}, ${level_stop}, ${level_step}, ${dwell}, ${freq_offset}, ${phase_offset}, ${lo_mode}, ${rf_port}, ${ext_ref}, ${ref_freq}, ${ref_out}, ${max_latency_ms}, ${mod_rate}, ${mod_shape}, ${am_depth}, ${fm_deviation}, ${pm_deviation}, ${pulse_width}, ${pulse_period}, ${tone_count}, ${tone_spacing}, ${tone_phase}, ${ramp_span}, ${ramp_time}, ${ramp_period}, ${noise_bw}, ${noise_length}, ${dig_type}, ${symbol_rate}, ${fsk_deviation}, ${filter_type}, ${filter_alpha}, ${sps}, ${filter_span}, ${pn_order}, ${pn_seed}, ${symbols}, ${dsss_code}, ${ofdm_fft}, ${ofdm_symbols}, ${ofdm_guard_left}, ${ofdm_guard_right}, ${ofdm_cp}, ${ofdm_window}, ${ofdm_null_dc}, ${ofdm_mod}, ${ofdm_idle}, ${ofdm_rate});'
   link: ['gnuradio::gnuradio-harogic_sg']
   callbacks:
   - set_mode(${mode})
@@ -193,8 +439,18 @@ cpp_templates:
   - set_samp_rate(${samp_rate})
   - set_rf_on(${rf_on})
   - set_scale(${scale})
+  - set_analog_mod(${mod_rate}, ${mod_shape}, ${am_depth}, ${fm_deviation}, ${pm_deviation})
+  - set_pulse(${pulse_width}, ${pulse_period})
+  - set_multitone(${tone_count}, ${tone_spacing}, ${tone_phase})
+  - set_ramp_sweep(${ramp_span}, ${ramp_time}, ${ramp_period})
+  - set_noise(${noise_bw}, ${noise_length})
+  - set_digital_mod(${dig_type}, ${symbol_rate}, ${fsk_deviation}, ${filter_type}, ${filter_alpha}, ${sps}, ${filter_span}, ${pn_order}, ${pn_seed}, ${symbols})
+  - set_dsss_code(${dsss_code})
+  - set_ofdm(${ofdm_fft}, ${ofdm_symbols}, ${ofdm_guard_left}, ${ofdm_guard_right}, ${ofdm_cp}, ${ofdm_window}, ${ofdm_null_dc}, ${ofdm_mod}, ${ofdm_idle}, ${ofdm_rate})
 
 documentation: |-
+  gr-harogic_sg by Penthertz (https://penthertz.com, https://github.com/PentHertz/gr-harogic_sg)
+
   Transmits with a Harogic H2 signal generator. Mode (changeable while running):
 
     GNU Radio IQ    - streams the complex input in real time (195.3125 kS/s .. 62.5 MS/s).
@@ -204,7 +460,22 @@ documentation: |-
     Frequency Sweep - Sweep Start -> Stop in Sweep Step, Dwell seconds per point, repeated
     Level Sweep     - at Frequency, Level Start -> Stop in Level Step, Dwell seconds per point
 
-  The input is optional (hidden outside GNU Radio IQ mode). In CW / sweep modes a connected
+  Built-in waveforms, generated by the H2 modulation library, downloaded to the generator memory
+  and looped at Frequency / Level (no USB streaming while they play):
+    AM / FM / PM    - Mod. Rate, Mod. Waveform and AM Depth / FM Deviation / PM Deviation
+    Pulse           - Pulse Width / Pulse Period
+    Multitone       - Tones x Tone Spacing, centered on Frequency
+    Ramp Sweep      - Ramp Span swept in Ramp Sweep Time, every Ramp Period
+    AWGN            - Noise Bandwidth, Noise Length of noise looped
+    Digital Mod.    - PSK/QAM/APSK/ASK/FSK on a PN sequence, pulse-shaping filter
+    DSSS            - same as Digital Mod., spread by a PN code (Spreading Code Order)
+    OFDM            - FFT Size, subcarrier modulation, guard carriers, guard interval, windowing
+  Digital Mod., DSSS and OFDM need the modulation license: copy <model>_<serial>_mod.lic from
+  SGStudio's bin/CalFile/ next to the calibration file (e.g. /usr/bin/CalFile/). Out-of-range
+  values are clamped by the library and a warning shows the value used. Changing a waveform
+  parameter regenerates and reloads the waveform; Frequency / Level changes do not.
+
+  The input is optional (hidden outside GNU Radio IQ mode). In CW / sweep / built-in modes a connected
   input is consumed at the sample rate and discarded, so you can switch modes at runtime with a
   QT GUI Chooser bound to "Mode".
 

@@ -40,7 +40,43 @@ sink::sptr sink::make(int device_index,
                       bool ext_ref,
                       double ref_freq,
                       bool ref_out,
-                      double max_latency_ms)
+                      double max_latency_ms,
+                      double mod_rate,
+                      int mod_shape,
+                      double am_depth,
+                      double fm_deviation,
+                      double pm_deviation,
+                      double pulse_width,
+                      double pulse_period,
+                      int tone_count,
+                      double tone_spacing,
+                      int tone_phase,
+                      double ramp_span,
+                      double ramp_time,
+                      double ramp_period,
+                      double noise_bw,
+                      double noise_length,
+                      int dig_type,
+                      double symbol_rate,
+                      double fsk_deviation,
+                      int filter_type,
+                      double filter_alpha,
+                      int sps,
+                      int filter_span,
+                      int pn_order,
+                      int pn_seed,
+                      int symbols,
+                      int dsss_code,
+                      int ofdm_fft,
+                      int ofdm_symbols,
+                      int ofdm_guard_left,
+                      int ofdm_guard_right,
+                      int ofdm_cp,
+                      int ofdm_window,
+                      bool ofdm_null_dc,
+                      int ofdm_mod,
+                      double ofdm_idle,
+                      double ofdm_rate)
 {
     return gnuradio::make_block_sptr<sink_impl>(device_index,
                                                 mode,
@@ -63,7 +99,43 @@ sink::sptr sink::make(int device_index,
                                                 ext_ref,
                                                 ref_freq,
                                                 ref_out,
-                                                max_latency_ms);
+                                                max_latency_ms,
+                                                mod_rate,
+                                                mod_shape,
+                                                am_depth,
+                                                fm_deviation,
+                                                pm_deviation,
+                                                pulse_width,
+                                                pulse_period,
+                                                tone_count,
+                                                tone_spacing,
+                                                tone_phase,
+                                                ramp_span,
+                                                ramp_time,
+                                                ramp_period,
+                                                noise_bw,
+                                                noise_length,
+                                                dig_type,
+                                                symbol_rate,
+                                                fsk_deviation,
+                                                filter_type,
+                                                filter_alpha,
+                                                sps,
+                                                filter_span,
+                                                pn_order,
+                                                pn_seed,
+                                                symbols,
+                                                dsss_code,
+                                                ofdm_fft,
+                                                ofdm_symbols,
+                                                ofdm_guard_left,
+                                                ofdm_guard_right,
+                                                ofdm_cp,
+                                                ofdm_window,
+                                                ofdm_null_dc,
+                                                ofdm_mod,
+                                                ofdm_idle,
+                                                ofdm_rate);
 }
 
 static void check_rate(double r)
@@ -73,20 +145,34 @@ static void check_rate(double r)
             "harogic_sg.sink: samp_rate must be between 195312.5 and 62.5e6 S/s");
 }
 
-tx_plan::kind_t sink_impl::to_kind(int mode)
+static constexpr int FIRST_BUILTIN_MODE = 4;
+
+void sink_impl::set_kind(int mode)
 {
     switch (mode) {
     case 0:
-        return tx_plan::REALTIME;
+        d_plan.kind = tx_plan::REALTIME;
+        return;
     case 1:
-        return tx_plan::CW;
+        d_plan.kind = tx_plan::CW;
+        return;
     case 2:
-        return tx_plan::FREQ_SWEEP;
+        d_plan.kind = tx_plan::FREQ_SWEEP;
+        return;
     case 3:
-        return tx_plan::LEVEL_SWEEP;
+        d_plan.kind = tx_plan::LEVEL_SWEEP;
+        return;
     default:
-        throw std::invalid_argument("harogic_sg.sink: mode must be 0 (GNU Radio IQ), "
-                                    "1 (CW), 2 (frequency sweep) or 3 (level sweep)");
+        if (mode >= FIRST_BUILTIN_MODE &&
+            mode < FIRST_BUILTIN_MODE + mod_settings::NUM_WAVES) {
+            d_plan.kind = tx_plan::PLAYBACK;
+            d_plan.mod.wave = (mod_settings::wave_t)(mode - FIRST_BUILTIN_MODE);
+            return;
+        }
+        throw std::invalid_argument(
+            "harogic_sg.sink: mode must be 0 (GNU Radio IQ), 1 (CW), 2 (frequency "
+            "sweep), 3 (level sweep), 4 AM, 5 FM, 6 PM, 7 pulse, 8 multitone, 9 ramp "
+            "sweep, 10 AWGN, 11 digital modulation, 12 DSSS or 13 OFDM");
     }
 }
 
@@ -99,9 +185,23 @@ int sink_impl::mode() const
         return 1;
     case tx_plan::FREQ_SWEEP:
         return 2;
-    default:
+    case tx_plan::LEVEL_SWEEP:
         return 3;
+    default:
+        return FIRST_BUILTIN_MODE + (int)d_plan.mod.wave;
     }
+}
+
+double sink_impl::playback_rate() const
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    return d_dev ? d_dev->playback_rate() : 0.0;
+}
+
+uint64_t sink_impl::playback_points() const
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    return d_dev ? d_dev->playback_points() : 0;
 }
 
 sink_impl::sink_impl(int device_index,
@@ -125,7 +225,43 @@ sink_impl::sink_impl(int device_index,
                      bool ext_ref,
                      double ref_freq,
                      bool ref_out,
-                     double max_latency_ms)
+                     double max_latency_ms,
+                     double mod_rate,
+                     int mod_shape,
+                     double am_depth,
+                     double fm_deviation,
+                     double pm_deviation,
+                     double pulse_width,
+                     double pulse_period,
+                     int tone_count,
+                     double tone_spacing,
+                     int tone_phase,
+                     double ramp_span,
+                     double ramp_time,
+                     double ramp_period,
+                     double noise_bw,
+                     double noise_length,
+                     int dig_type,
+                     double symbol_rate,
+                     double fsk_deviation,
+                     int filter_type,
+                     double filter_alpha,
+                     int sps,
+                     int filter_span,
+                     int pn_order,
+                     int pn_seed,
+                     int symbols,
+                     int dsss_code,
+                     int ofdm_fft,
+                     int ofdm_symbols,
+                     int ofdm_guard_left,
+                     int ofdm_guard_right,
+                     int ofdm_cp,
+                     int ofdm_window,
+                     bool ofdm_null_dc,
+                     int ofdm_mod,
+                     double ofdm_idle,
+                     double ofdm_rate)
     : gr::sync_block("harogic_sg_sink",
                      gr::io_signature::make(0, 1, sizeof(gr_complex)),
                      gr::io_signature::make(0, 0, 0)),
@@ -140,7 +276,7 @@ sink_impl::sink_impl(int device_index,
     d_dev_settings.lo_mode = lo_mode;
     d_dev_settings.rf_port = rf_port;
 
-    d_plan.kind = to_kind(mode);
+    set_kind(mode);
     d_plan.frequency = frequency;
     d_plan.level = level;
     d_plan.samp_rate = samp_rate;
@@ -154,6 +290,42 @@ sink_impl::sink_impl(int device_index,
     d_plan.level_stop = level_stop;
     d_plan.level_step = level_step;
     d_plan.dwell = dwell;
+    d_plan.mod.mod_rate = mod_rate;
+    d_plan.mod.mod_shape = mod_shape;
+    d_plan.mod.am_depth = am_depth;
+    d_plan.mod.fm_deviation = fm_deviation;
+    d_plan.mod.pm_deviation = pm_deviation;
+    d_plan.mod.pulse_width = pulse_width;
+    d_plan.mod.pulse_period = pulse_period;
+    d_plan.mod.tone_count = tone_count;
+    d_plan.mod.tone_spacing = tone_spacing;
+    d_plan.mod.tone_phase = tone_phase;
+    d_plan.mod.ramp_span = ramp_span;
+    d_plan.mod.ramp_time = ramp_time;
+    d_plan.mod.ramp_period = ramp_period;
+    d_plan.mod.noise_bw = noise_bw;
+    d_plan.mod.noise_length = noise_length;
+    d_plan.mod.dig_type = dig_type;
+    d_plan.mod.symbol_rate = symbol_rate;
+    d_plan.mod.fsk_deviation = fsk_deviation;
+    d_plan.mod.filter_type = filter_type;
+    d_plan.mod.filter_alpha = filter_alpha;
+    d_plan.mod.sps = sps;
+    d_plan.mod.filter_span = filter_span;
+    d_plan.mod.pn_order = pn_order;
+    d_plan.mod.pn_seed = pn_seed;
+    d_plan.mod.symbols = symbols;
+    d_plan.mod.dsss_code = dsss_code;
+    d_plan.mod.ofdm_fft = ofdm_fft;
+    d_plan.mod.ofdm_symbols = ofdm_symbols;
+    d_plan.mod.ofdm_guard_left = ofdm_guard_left;
+    d_plan.mod.ofdm_guard_right = ofdm_guard_right;
+    d_plan.mod.ofdm_cp = ofdm_cp;
+    d_plan.mod.ofdm_window = ofdm_window;
+    d_plan.mod.ofdm_null_dc = ofdm_null_dc;
+    d_plan.mod.ofdm_mod = ofdm_mod;
+    d_plan.mod.ofdm_idle = ofdm_idle;
+    d_plan.mod.ofdm_rate = ofdm_rate;
 
     set_output_multiple(1024);
 
@@ -292,7 +464,7 @@ int sink_impl::work(int noutput_items,
 void sink_impl::set_mode(int mode)
 {
     std::lock_guard<std::mutex> lock(d_mutex);
-    d_plan.kind = to_kind(mode);
+    set_kind(mode);
     rearm();
 }
 
@@ -392,6 +564,135 @@ void sink_impl::set_max_latency_ms(double max_latency_ms)
     d_max_latency = std::max(1.0, max_latency_ms) / 1000.0;
 }
 
+template <typename F>
+void sink_impl::update_mod(F&& change, std::initializer_list<mod_settings::wave_t> waves)
+{
+    std::lock_guard<std::mutex> lock(d_mutex);
+    change(d_plan.mod);
+    if (d_plan.kind != tx_plan::PLAYBACK)
+        return;
+    for (auto w : waves)
+        if (w == d_plan.mod.wave) {
+            rearm(); // regenerates only if the waveform settings changed
+            return;
+        }
+}
+
+void sink_impl::set_analog_mod(
+    double rate, int shape, double am_depth, double fm_deviation, double pm_deviation)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.mod_rate = rate;
+            m.mod_shape = shape;
+            m.am_depth = am_depth;
+            m.fm_deviation = fm_deviation;
+            m.pm_deviation = pm_deviation;
+        },
+        { mod_settings::AM, mod_settings::FM, mod_settings::PM });
+}
+
+void sink_impl::set_pulse(double width, double period)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.pulse_width = width;
+            m.pulse_period = period;
+        },
+        { mod_settings::PULSE });
+}
+
+void sink_impl::set_multitone(int count, double spacing, int phase_mode)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.tone_count = count;
+            m.tone_spacing = spacing;
+            m.tone_phase = phase_mode;
+        },
+        { mod_settings::MULTITONE });
+}
+
+void sink_impl::set_ramp_sweep(double span, double sweep_time, double period)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.ramp_span = span;
+            m.ramp_time = sweep_time;
+            m.ramp_period = period;
+        },
+        { mod_settings::RAMP_SWEEP });
+}
+
+void sink_impl::set_noise(double bandwidth, double length)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.noise_bw = bandwidth;
+            m.noise_length = length;
+        },
+        { mod_settings::AWGN });
+}
+
+void sink_impl::set_digital_mod(int type,
+                                double symbol_rate,
+                                double fsk_deviation,
+                                int filter_type,
+                                double alpha,
+                                int sps,
+                                int filter_span,
+                                int pn_order,
+                                int pn_seed,
+                                int symbols)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.dig_type = type;
+            m.symbol_rate = symbol_rate;
+            m.fsk_deviation = fsk_deviation;
+            m.filter_type = filter_type;
+            m.filter_alpha = alpha;
+            m.sps = sps;
+            m.filter_span = filter_span;
+            m.pn_order = pn_order;
+            m.pn_seed = pn_seed;
+            m.symbols = symbols;
+        },
+        { mod_settings::DIGITAL, mod_settings::DSSS });
+}
+
+void sink_impl::set_dsss_code(int code)
+{
+    update_mod([&](mod_settings& m) { m.dsss_code = code; }, { mod_settings::DSSS });
+}
+
+void sink_impl::set_ofdm(int fft_size,
+                         int symbols,
+                         int guard_left,
+                         int guard_right,
+                         int cp_percent,
+                         int window_percent,
+                         bool null_dc,
+                         int subcarrier_mod,
+                         double idle_time,
+                         double samp_rate)
+{
+    update_mod(
+        [&](mod_settings& m) {
+            m.ofdm_fft = fft_size;
+            m.ofdm_symbols = symbols;
+            m.ofdm_guard_left = guard_left;
+            m.ofdm_guard_right = guard_right;
+            m.ofdm_cp = cp_percent;
+            m.ofdm_window = window_percent;
+            m.ofdm_null_dc = null_dc;
+            m.ofdm_mod = subcarrier_mod;
+            m.ofdm_idle = idle_time;
+            m.ofdm_rate = samp_rate;
+        },
+        { mod_settings::OFDM });
+}
+
 void sink_impl::handle_cmd(const pmt::pmt_t& msg)
 {
     if (!pmt::is_dict(msg)) {
@@ -411,8 +712,22 @@ void sink_impl::handle_cmd(const pmt::pmt_t& msg)
         }
     };
     pmt::pmt_t v;
+    auto integer = [&](const char* key, int& dst) {
+        pmt::pmt_t x = get(key);
+        if (!pmt::is_null(x)) {
+            dst = pmt::is_integer(x) ? (int)pmt::to_long(x) : (int)pmt::to_double(x);
+            changed = true;
+        }
+    };
+    auto boolean = [&](const char* key, bool& dst) {
+        pmt::pmt_t x = get(key);
+        if (!pmt::is_null(x)) {
+            dst = pmt::is_bool(x) ? pmt::to_bool(x) : pmt::to_long(x) != 0;
+            changed = true;
+        }
+    };
     if (!pmt::is_null(v = get("mode"))) {
-        d_plan.kind = to_kind((int)pmt::to_long(v));
+        set_kind((int)pmt::to_long(v));
         changed = true;
     }
     num("freq", d_plan.frequency);
@@ -426,10 +741,43 @@ void sink_impl::handle_cmd(const pmt::pmt_t& msg)
     num("level_stop", d_plan.level_stop);
     num("level_step", d_plan.level_step);
     num("dwell", d_plan.dwell);
-    if (!pmt::is_null(v = get("rf"))) {
-        d_plan.rf_on = pmt::is_bool(v) ? pmt::to_bool(v) : pmt::to_long(v) != 0;
-        changed = true;
-    }
+    num("mod_rate", d_plan.mod.mod_rate);
+    integer("mod_shape", d_plan.mod.mod_shape);
+    num("am_depth", d_plan.mod.am_depth);
+    num("fm_deviation", d_plan.mod.fm_deviation);
+    num("pm_deviation", d_plan.mod.pm_deviation);
+    num("pulse_width", d_plan.mod.pulse_width);
+    num("pulse_period", d_plan.mod.pulse_period);
+    integer("tone_count", d_plan.mod.tone_count);
+    num("tone_spacing", d_plan.mod.tone_spacing);
+    integer("tone_phase", d_plan.mod.tone_phase);
+    num("ramp_span", d_plan.mod.ramp_span);
+    num("ramp_time", d_plan.mod.ramp_time);
+    num("ramp_period", d_plan.mod.ramp_period);
+    num("noise_bw", d_plan.mod.noise_bw);
+    num("noise_length", d_plan.mod.noise_length);
+    integer("dig_type", d_plan.mod.dig_type);
+    num("symbol_rate", d_plan.mod.symbol_rate);
+    num("fsk_deviation", d_plan.mod.fsk_deviation);
+    integer("filter_type", d_plan.mod.filter_type);
+    num("filter_alpha", d_plan.mod.filter_alpha);
+    integer("sps", d_plan.mod.sps);
+    integer("filter_span", d_plan.mod.filter_span);
+    integer("pn_order", d_plan.mod.pn_order);
+    integer("pn_seed", d_plan.mod.pn_seed);
+    integer("symbols", d_plan.mod.symbols);
+    integer("dsss_code", d_plan.mod.dsss_code);
+    integer("ofdm_fft", d_plan.mod.ofdm_fft);
+    integer("ofdm_symbols", d_plan.mod.ofdm_symbols);
+    integer("ofdm_guard_left", d_plan.mod.ofdm_guard_left);
+    integer("ofdm_guard_right", d_plan.mod.ofdm_guard_right);
+    integer("ofdm_cp", d_plan.mod.ofdm_cp);
+    integer("ofdm_window", d_plan.mod.ofdm_window);
+    boolean("ofdm_null_dc", d_plan.mod.ofdm_null_dc);
+    integer("ofdm_mod", d_plan.mod.ofdm_mod);
+    num("ofdm_idle", d_plan.mod.ofdm_idle);
+    num("ofdm_rate", d_plan.mod.ofdm_rate);
+    boolean("rf", d_plan.rf_on);
     if (!pmt::is_null(v = get("samp_rate"))) {
         double r = pmt::to_double(v);
         check_rate(r);

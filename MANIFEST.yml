@@ -17,3 +17,4 @@ repo: https://github.com/PentHertz/gr-harogic_sg
 description: |-
   Real-time IQ streaming (195 kS/s - 62.5 MS/s) and CW / frequency sweep / level
   sweep control for Harogic H2 signal generators through Harogic's H2 API.
+  Developed and maintained by Penthertz (https://penthertz.com).
