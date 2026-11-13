@@ -1,0 +1,19 @@
+title: gr-harogic_sg
+version: 1.0
+brief: GNU Radio sink for Harogic H2 signal generators (real-time IQ, CW, frequency/level sweeps)
+tags:
+  - sdr
+  - signal generator
+  - transmitter
+  - harogic
+author:
+  - Penthertz
+copyright_owner:
+  - Penthertz
+license: GPL-3.0-or-later
+gr_supported_version:
+  - 3.10
+repo: https://github.com/PentHertz/gr-harogic_sg
+description: |-
+  Real-time IQ streaming (195 kS/s - 62.5 MS/s) and CW / frequency sweep / level
+  sweep control for Harogic H2 signal generators through Harogic's H2 API.

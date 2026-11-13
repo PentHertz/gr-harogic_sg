@@ -1,0 +1,192 @@
+options:
+  parameters:
+    author: Penthertz
+    description: FM tone transmitter on a Harogic H2 signal generator (gr-harogic_sg)
+    generate_options: qt_gui
+    id: harogic_sg_fm_tx
+    title: Harogic SG - FM tone TX
+    output_language: python
+    run: 'True'
+    run_options: prompt
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    hier_block_src_path: '.:'
+    max_nouts: '0'
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run_command: '{python} -u {filename}'
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    window_size: (1000,1000)
+  states:
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: samp_rate
+  id: variable
+  parameters:
+    value: 1e6
+  states:
+    coordinate: [200, 12]
+    rotation: 0
+    state: enabled
+- name: freq
+  id: variable_qtgui_range
+  parameters:
+    label: Frequency (Hz)
+    min_len: '200'
+    rangeType: float
+    start: 868.0e6
+    step: 10e3
+    stop: 868.6e6
+    value: 868.3e6
+    widget: counter_slider
+    gui_hint: 0,0,1,2
+  states:
+    coordinate: [320, 12]
+    rotation: 0
+    state: enabled
+- name: level
+  id: variable_qtgui_range
+  parameters:
+    label: Level (dBm)
+    min_len: '200'
+    rangeType: float
+    start: '-60'
+    step: '1'
+    stop: '0'
+    value: '-30'
+    widget: counter_slider
+    gui_hint: 1,0,1,1
+  states:
+    coordinate: [480, 12]
+    rotation: 0
+    state: enabled
+- name: rf_on
+  id: variable_qtgui_check_box
+  parameters:
+    label: RF output
+    type: bool
+    'true': 'True'
+    'false': 'False'
+    value: 'True'
+    gui_hint: 1,1,1,1
+  states:
+    coordinate: [640, 12]
+    rotation: 0
+    state: enabled
+- name: tone
+  id: variable_qtgui_range
+  parameters:
+    label: Tone (Hz)
+    min_len: '200'
+    rangeType: float
+    start: '100'
+    step: '100'
+    stop: '10000'
+    value: '1000'
+    widget: counter_slider
+    gui_hint: 2,0,1,1
+  states:
+    coordinate: [800, 12]
+    rotation: 0
+    state: enabled
+- name: deviation
+  id: variable_qtgui_range
+  parameters:
+    label: Deviation (Hz)
+    min_len: '200'
+    rangeType: float
+    start: '100'
+    step: '100'
+    stop: '75000'
+    value: '5000'
+    widget: counter_slider
+    gui_hint: 2,1,1,1
+  states:
+    coordinate: [960, 12]
+    rotation: 0
+    state: enabled
+- name: analog_sig_source_x_0
+  id: analog_sig_source_x
+  parameters:
+    type: float
+    samp_rate: samp_rate
+    waveform: analog.GR_COS_WAVE
+    freq: tone
+    amp: '1'
+    offset: '0'
+    phase: '0'
+  states:
+    coordinate: [40, 200]
+    rotation: 0
+    state: enabled
+- name: analog_frequency_modulator_fc_0
+  id: analog_frequency_modulator_fc
+  parameters:
+    sensitivity: 2*math.pi*deviation/samp_rate
+  states:
+    coordinate: [280, 228]
+    rotation: 0
+    state: enabled
+- name: import_math
+  id: import
+  parameters:
+    imports: import math
+  states:
+    coordinate: [1120, 12]
+    rotation: 0
+    state: enabled
+- name: harogic_sg_sink_0
+  id: harogic_sg_sink
+  parameters:
+    device_index: '0'
+    mode: '0'
+    frequency: freq
+    level: level
+    samp_rate: samp_rate
+    rf_on: rf_on
+    scale: '0.9'
+    freq_offset: '0'
+    phase_offset: '0'
+    lo_mode: '0'
+    rf_port: '0'
+    max_latency_ms: '50'
+    ext_ref: 'False'
+    ref_freq: 10e6
+    ref_out: 'False'
+  states:
+    coordinate: [560, 200]
+    rotation: 0
+    state: enabled
+- name: qtgui_freq_sink_x_0
+  id: qtgui_freq_sink_x
+  parameters:
+    type: complex
+    fftsize: '2048'
+    fc: freq
+    bw: samp_rate
+    name: '"Transmitted baseband"'
+    nconnections: '1'
+    gui_hint: 3,0,1,2
+  states:
+    coordinate: [560, 320]
+    rotation: 0
+    state: enabled
+
+connections:
+- [analog_sig_source_x_0, '0', analog_frequency_modulator_fc_0, '0']
+- [analog_frequency_modulator_fc_0, '0', harogic_sg_sink_0, '0']
+- [analog_frequency_modulator_fc_0, '0', qtgui_freq_sink_x_0, '0']
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.12.0

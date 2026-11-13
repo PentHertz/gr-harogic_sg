@@ -1,0 +1,6 @@
+GNU Radio sink for Harogic H2 signal generators:
+
+    from gnuradio import harogic_sg
+    harogic_sg.sink(mode=0, ...)  # 0 GNU Radio IQ, 1 CW, 2 frequency sweep, 3 level sweep
+
+See README.md at the top of the source tree.
