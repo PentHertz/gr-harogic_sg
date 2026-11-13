@@ -9,10 +9,10 @@ One block, **Harogic SG: Sink** (`harogic_sg.sink`), with a **Mode** selector
 
 | Mode | What is transmitted |
 |---|---|
-| 0 — GNU Radio IQ | the complex input, streamed in real time (195.3125 kS/s … 62.5 MS/s) |
-| 1 — CW | carrier at Frequency / Level (generator's built-in mode) |
-| 2 — Frequency Sweep | Sweep Start → Stop in Sweep Step, Dwell per point, repeated (FSCAN) |
-| 3 — Level Sweep | at Frequency, Level Start → Stop in Level Step, Dwell per point (LSCAN) |
+| 0: GNU Radio IQ | the complex input, streamed in real time (195.3125 kS/s … 62.5 MS/s) |
+| 1: CW | carrier at Frequency / Level (generator's built-in mode) |
+| 2: Frequency Sweep | Sweep Start → Stop in Sweep Step, Dwell per point, repeated (FSCAN) |
+| 3: Level Sweep | at Frequency, Level Start → Stop in Level Step, Dwell per point (LSCAN) |
 
 So you can build any signal in GNU Radio and send it, or use the generator's own
 CW / sweeps, and switch between them at runtime. Every hardware setting is
